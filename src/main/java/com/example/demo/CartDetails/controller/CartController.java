@@ -25,7 +25,12 @@ public class CartController {
     }
 
     @PostMapping("/add-to-cart")
-    public String addToCart(HttpServletRequest request, @RequestBody CartItem cartItem) {
+    public Cart addToCart(HttpServletRequest request, @RequestBody CartItem cartItem) {
         return cartService.addToCart(request, cartItem);
+    }
+
+    @PostMapping("/remove-from-cart")
+    public Cart removeFromCart(HttpServletRequest request, @RequestBody CartItem cartItem) {
+        return cartService.removeCartItem(request, cartItem);
     }
 }

@@ -1,9 +1,12 @@
 package com.example.demo.CartDetails.service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,7 +43,7 @@ public class CartService {
             username = JWTService.extractUsername(token);
         }
         Cart cart = cartRepo.findByUsername(username);
-        if(cart == null) {
+        if (cart == null) {
             return createCart(request, username);
         }
         return cart;
@@ -54,46 +57,61 @@ public class CartService {
         return cart;
     }
 
-    public String addToCart(HttpServletRequest request, CartItem cartItem) {
+    public Cart addToCart(HttpServletRequest request, CartItem cartItem) {
         String username = JWTService.getUsername(request);
         Cart cart = cartRepo.findByUsername(username);
         if (cart == null) {
             cart = createCart(request, username);
         }
-        CartItem updatedCartItem = cartItem.getId() != null ? cartItemRepo.findById(cartItem.getId()).orElse(null) : null;
-        if (updatedCartItem != null) {
-            updatedCartItem.setQuantity(updatedCartItem.getQuantity() + 1);
-            cart.setTotalAmount(cart.getTotalAmount() + cartItem.getFood().getPrice());
-            cart.setTotalQuantity(cart.getTotalQuantity() + 1);
-            cartItemRepo.save(updatedCartItem);
-            return "add to cart successfully";
-        }
-        cartItem.setQuantity(1);
-        cart.setTotalItems(cart.getTotalItems() + 1);
+        CartItem updatedCartItem = cartItem.getId() != null ? cartItemRepo.findById(cartItem.getId()).orElse(null)
+                : null;
         cart.setTotalAmount(cart.getTotalAmount() + cartItem.getFood().getPrice());
         cart.setTotalQuantity(cart.getTotalQuantity() + 1);
-        cart.addCartItem(cartItem);
-        cartRepo.save(cart);
-        return "add to cart successfully";
+        if (updatedCartItem != null) {
+            updatedCartItem.setQuantity(updatedCartItem.getQuantity() + 1);
+            updatedCartItem.setUpdatedAt(OffsetDateTime.now());
+            cartItemRepo.save(updatedCartItem);
+        } else {
+            cartItem.setQuantity(1);
+            cartItem.setAddedAt(OffsetDateTime.now());
+            cartItem.setUpdatedAt(OffsetDateTime.now());
+            cart.setTotalItems(cart.getTotalItems() + 1);
+            cart.addCartItem(cartItem);
+            cartRepo.save(cart);
+        }
+        List<CartItem> sortedItems = cart.getCartItems()
+                .stream()
+                .sorted(Comparator.comparing(CartItem::getAddedAt))
+                .collect(Collectors.toList());
+        cart.setCartItems(sortedItems);
+        return cart;
     }
-    public String removeCartItem(HttpServletRequest request, CartItem cartItem) {
+
+    public Cart removeCartItem(HttpServletRequest request, CartItem cartItem) {
         String username = JWTService.getUsername(request);
         Cart cart = cartRepo.findByUsername(username);
 
         CartItem updatedCartItem = cartItemRepo.findById(cartItem.getId()).orElse(null);
+        cart.setTotalAmount(cart.getTotalAmount() - cartItem.getFood().getPrice());
+        cart.setTotalQuantity(cart.getTotalQuantity() - 1);
         if (updatedCartItem != null) {
             if (updatedCartItem.getQuantity() > 1) {
                 updatedCartItem.setQuantity(updatedCartItem.getQuantity() - 1);
+                updatedCartItem.setUpdatedAt(OffsetDateTime.now());
                 cartItemRepo.save(updatedCartItem);
-                return "remove from cart successfully";
             } else {
                 cartItemRepo.delete(updatedCartItem);
                 cart.getCartItems().remove(updatedCartItem);
+                cart.setTotalItems(cart.getTotalItems() - 1);
                 cartRepo.save(cart);
-                return "remove from cart successfully";
             }
         }
+        List<CartItem> sortedItems = cart.getCartItems()
+                .stream()
+                .sorted(Comparator.comparing(CartItem::getAddedAt))
+                .collect(Collectors.toList());
+        cart.setCartItems(sortedItems);
 
-        return "remove from cart successfully";
+        return cart;
     }
 }
