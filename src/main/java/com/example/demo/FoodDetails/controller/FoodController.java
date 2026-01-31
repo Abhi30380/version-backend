@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,8 +32,19 @@ public class FoodController {
         return foodService.getAllProducts();
     }
 
+    @PostMapping("/search/products")
+    public List<Food> searchProduct(@RequestBody Map<String, String> request) {
+        return foodService.searchProduct(request);
+    }
+
+    @GetMapping("/search/suggestions")
+    public List<String> getSuggestions(@RequestParam String q) {
+        return foodService.getSuggestions(q);
+    }
+
+
     @PostMapping("/add-product")
-    public String addProduct(@RequestBody Food food) {
+    public ResponseEntity<String> addProduct(@RequestBody Food food) {
         return foodService.addProduct(food);
     }
 

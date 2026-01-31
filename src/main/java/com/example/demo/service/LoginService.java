@@ -1,11 +1,14 @@
 package com.example.demo.service;
 
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,15 +36,20 @@ public class LoginService {
         this.userRepo = userRepo;
     }
 
-    public String Signin(Users user) {
+    public ResponseEntity<String> Signin(Users user) {
         Users oldUser = userRepo.findByUsername(user.getUsername());
         if (oldUser != null) {
-            return "user already exist";
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("user already exist");
         }
         user.setPassword(encode.encode(user.getPassword()));
         user.setId(UUID.randomUUID().toString());
+        user.setCreatedAt(OffsetDateTime.now());
         userRepo.save(user);
-        return "login successully";
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body("login successully");
     }
 
     public List<Users> getAll() {

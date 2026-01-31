@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,8 +30,8 @@ public class LoginController {
     }
 
     @PostMapping("/signin")
-    public String Signin(@RequestBody Users user) {
-        System.out.println(user + "these are login details");
+    public ResponseEntity<String> Signin(@RequestBody Users user) {
+        System.out.println(user + "these are login details ok");
         return loginService.Signin(user);
     }
 

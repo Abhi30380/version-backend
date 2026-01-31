@@ -1,0 +1,45 @@
+// Optimized schema: One User has many Addresses (one-to-many)
+// User no longer has address string — relation only
+
+Table users {
+  id varchar [primary key]
+  username varchar [not null]
+  password varchar [not null]
+  email varchar
+  phone varchar
+  country_code varchar
+  role varchar
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    username [unique]
+  }
+}
+
+Enum Status {
+  ARCHIVE
+  PUBLISHED
+}
+
+Table address {
+  id varchar [primary key]
+  status varchar [not null, note: 'Status (common): ARCHIVE | PUBLISHED']
+  name varchar [not null]
+  search_address varchar
+  address_line1 varchar [not null]
+  address_line2 varchar
+  city varchar [not null]
+  state varchar
+  zipcode varchar
+  country varchar [not null]
+  is_primary boolean [default: false]
+  user_id varchar [not null, ref: > users.id]
+
+  indexes {
+    user_id
+    status
+  }
+}
+
+// Relation: One user -> many addresses (no address column on users)
+// Ref: address.user_id -> users.id
