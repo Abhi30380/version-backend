@@ -22,4 +22,6 @@ public interface AddressRepo extends JpaRepository<Address, String> {
     @Modifying
     @Query("UPDATE Address a SET a.isPrimary = false WHERE a.user.id = :userId AND a.status = :published")
     void clearPrimaryByUserId(@Param("userId") String userId, @Param("published") Status published);
+
+    Optional<Address> findByUser_IdAndIsPrimaryTrueAndStatus(String userId, Status status);
 }

@@ -43,3 +43,61 @@ Table address {
 
 // Relation: One user -> many addresses (no address column on users)
 // Ref: address.user_id -> users.id
+
+Enum DeliveryStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  IN_TRANSIT
+  DELIVERED
+  DELAYED
+  FAILED
+  CANCELLED
+}
+
+Table document {
+  id varchar [primary key]
+  total_amount integer [not null]
+  total_quantity integer [not null]
+  user_id varchar [not null, ref: > users.id]
+  address_id varchar [ref: > address.id, note: 'default: primary address at checkout']
+  delivery_status varchar [not null, note: 'DeliveryStatus']
+  created_at timestamp [not null]
+
+  indexes {
+    user_id
+    delivery_status
+  }
+}
+
+Table document_item {
+  id varchar [primary key]
+  document_id varchar [not null, ref: > document.id]
+  food_id varchar [not null, ref: > food.id]
+  quantity integer [not null]
+  unit_price integer [not null]
+}
+
+Table cart {
+  id varchar [primary key]
+  total_amount integer
+  total_items integer
+  total_quantity integer
+  username varchar [note: 'null after checkout']
+  status varchar
+  cart_link_to varchar [ref: > document.id, note: 'linked to document after checkout']
+
+  indexes {
+    username
+  }
+}
+
+Table cart_item {
+  id uuid [primary key]
+  food_id varchar [ref: > food.id]
+  added_at timestamp
+  updated_at timestamp
+  quantity integer
+  cart_id varchar [ref: > cart.id]
+}

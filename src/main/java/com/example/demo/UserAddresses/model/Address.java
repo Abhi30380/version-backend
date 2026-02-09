@@ -3,6 +3,7 @@ package com.example.demo.UserAddresses.model;
 import com.example.demo.common.Status;
 import com.example.demo.model.Users;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "address", indexes = { @Index(columnList = "user_id"), @Index(columnList = "status") })
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Address {
     @Id
     private String id;
