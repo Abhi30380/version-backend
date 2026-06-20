@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local Environment Variables
+.env
+run.ps1
+run.bat
+run.sh
+
+
