@@ -16,6 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.FoodDetails.model.Food;
 import com.example.demo.FoodDetails.service.FoodService;
 import com.example.demo.FoodDetails.service.UploadFoodImage;
+import com.example.demo.model.Users;
+import com.example.demo.repo.UserRepo;
+import com.example.demo.service.JWTService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class FoodController {
@@ -24,9 +29,16 @@ public class FoodController {
     @Autowired
     UploadFoodImage uploadFoodImage;
 
+    @Autowired
+    JWTService jwtService;
+
+    @Autowired
+    UserRepo userRepo;
+
     public FoodController(FoodService foodService) {
         this.foodService = foodService;
     }
+
     @GetMapping("/get-all-products")
     public List<Food> getAllProducts() {
         return foodService.getAllProducts();
@@ -42,10 +54,11 @@ public class FoodController {
         return foodService.getSuggestions(q);
     }
 
-
     @PostMapping("/add-product")
-    public ResponseEntity<String> addProduct(@RequestBody Food food) {
-        return foodService.addProduct(food);
+    public ResponseEntity<String> addProduct(@RequestBody Food food, HttpServletRequest request) {
+        String username = jwtService.getUsername(request);
+        Users user = userRepo.findByUsername(username);
+        return foodService.addProduct(food, user);
     }
 
     @PostMapping("/upload-image")

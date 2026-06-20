@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -18,7 +19,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "document_item")
+@Table(name = "document_item", indexes = {
+    @Index(name = "idx_document_item_seller", columnList = "seller_id")
+})
 public class DocumentItem {
 
     @Id
@@ -27,6 +30,9 @@ public class DocumentItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_id", nullable = false)
     private Food food;
+
+    @Column(name = "seller_id")
+    private String sellerId;
 
     @Column(nullable = false)
     private int quantity;

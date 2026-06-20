@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.FoodDetails.model.Food;
 import com.example.demo.FoodDetails.model.Inventory;
 import com.example.demo.FoodDetails.repo.FoodRepo;
+import com.example.demo.model.Users;
 
 @Service
 public class FoodService {
@@ -29,12 +30,20 @@ public class FoodService {
         return foodRepo.findAll();
     }
 
-    public ResponseEntity<String> addProduct(Food food) {
+    public ResponseEntity<String> addProduct(Food food, Users user) {
         food.setId(UUID.randomUUID().toString());
         OffsetDateTime now = OffsetDateTime.now();
 
         food.setCreatedAt(now);
         food.setUpdatedAt(now);
+
+        // Set creator/updater info from authenticated user
+        food.setCreatedBy(user.getId());
+        food.setCreatedByName(user.getUsername());
+        food.setUpdatedBy(user.getId());
+        food.setUpdatedByName(user.getUsername());
+        food.setCompanyName(user.getCompanyName());
+
         Inventory inventory = food.getInventory();
         if (inventory != null) {
             inventory.setId(UUID.randomUUID().toString());

@@ -30,6 +30,7 @@ public class Users {
     private String password;
     private String email;
     private String role;
+    private String companyName;
     private String phone;
 
     @Column(name = "country_code")

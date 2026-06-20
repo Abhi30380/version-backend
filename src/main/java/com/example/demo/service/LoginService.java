@@ -80,9 +80,19 @@ public class LoginService {
         return user;
     }
 
-    public Map<String, Object> updateUserDetails(Users user_detials) {
-        System.out.println("this is updated user_details"+user_detials);
-        userRepo.save(user_detials);
+    public Map<String, Object> updateUserDetails(Users userInput) {
+        Users existing = userRepo.findById(userInput.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Only update safe fields — never overwrite password, addresses, or createdAt
+        if (userInput.getEmail() != null) existing.setEmail(userInput.getEmail());
+        if (userInput.getPhone() != null) existing.setPhone(userInput.getPhone());
+        if (userInput.getCountryCode() != null) existing.setCountryCode(userInput.getCountryCode());
+        if (userInput.getRole() != null) existing.setRole(userInput.getRole());
+        if (userInput.getCompanyName() != null) existing.setCompanyName(userInput.getCompanyName());
+
+        userRepo.save(existing);
+
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("message", "user details updated successfully");

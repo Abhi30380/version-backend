@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -38,6 +39,9 @@ public class securityConfig implements WebMvcConfigurer {
                   .authorizeHttpRequests(request -> request
                                                     .requestMatchers("/login","/signin").permitAll()
                                                     .anyRequest().authenticated())
+                  .exceptionHandling(exception -> exception
+                                                    .authenticationEntryPoint((request, response, authException) ->
+                                                        response.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized")))
                   .sessionManagement(session ->  session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                   .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                   .build();

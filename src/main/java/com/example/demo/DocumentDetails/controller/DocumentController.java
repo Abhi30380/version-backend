@@ -3,6 +3,9 @@ package com.example.demo.DocumentDetails.controller;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -103,6 +106,37 @@ public class DocumentController {
         }
     }
 
+    /** Update delivery address of an order. */
+    @PatchMapping("/{id}/address")
+    public ResponseEntity<?> updateAddress(
+            @PathVariable String id,
+            @RequestBody AddressPayload payload,
+            HttpServletRequest request) {
+        String userId = currentUserId(request);
+        if (payload == null || payload.getAddressId() == null || payload.getAddressId().isBlank()) {
+            return ResponseEntity.badRequest().body("addressId is required");
+        }
+        try {
+            Document updated = documentService.updateAddress(id, userId, payload.getAddressId());
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /** Seller orders: paginated list of orders containing products by the current seller. */
+    @GetMapping("/seller-orders")
+    public ResponseEntity<Page<Document>> getSellerOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) DeliveryStatus status,
+            HttpServletRequest request) {
+        String sellerId = currentUserId(request);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Document> result = documentService.getSellerOrders(sellerId, status, pageable);
+        return ResponseEntity.ok(result);
+    }
+
     public static class DeliveryStatusPayload {
         private DeliveryStatus deliveryStatus;
 
@@ -112,6 +146,18 @@ public class DocumentController {
 
         public void setDeliveryStatus(DeliveryStatus deliveryStatus) {
             this.deliveryStatus = deliveryStatus;
+        }
+    }
+
+    public static class AddressPayload {
+        private String addressId;
+
+        public String getAddressId() {
+            return addressId;
+        }
+
+        public void setAddressId(String addressId) {
+            this.addressId = addressId;
         }
     }
 }

@@ -24,21 +24,27 @@ public class Food {
     @Id
     private String id;
     private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
     private int price;
     private String currency;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
-    
+
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    @Column(columnDefinition = "text[]")
     private List<String> images;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "inventory_id")
     private Inventory inventory;
 
+    private String companyName;
     private String createdByName;
     private String updatedByName;
     private String createdBy;

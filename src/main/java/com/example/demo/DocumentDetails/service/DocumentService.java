@@ -4,6 +4,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,6 +85,7 @@ public class DocumentService {
             item.setFood(cartItem.getFood());
             item.setQuantity(cartItem.getQuantity());
             item.setUnitPrice(cartItem.getFood().getPrice());
+            item.setSellerId(cartItem.getFood().getCreatedBy());
             documentItemRepo.save(item);
             document.getDocumentItems().add(item);
             totalAmount += item.getUnitPrice() * item.getQuantity();
@@ -132,6 +135,7 @@ public class DocumentService {
             item.setFood(cartItem.getFood());
             item.setQuantity(cartItem.getQuantity());
             item.setUnitPrice(cartItem.getFood().getPrice());
+            item.setSellerId(cartItem.getFood().getCreatedBy());
             documentItemRepo.save(item);
             document.getDocumentItems().add(item);
             totalAmount += item.getUnitPrice() * item.getQuantity();
@@ -164,5 +168,34 @@ public class DocumentService {
         cart.setCartLinkTo(null);
         cartRepo.save(cart);
         return documentRepo.save(document);
+    }
+
+    @Transactional
+    public Document updateAddress(String documentId, String userId, String addressId) {
+        Document document = documentRepo.findById(documentId)
+                .filter(d -> d.getUser().getId().equals(userId))
+                .orElseThrow(() -> new IllegalArgumentException("Document not found"));
+
+        if (document.getDeliveryStatus() != DeliveryStatus.PENDING) {
+            throw new IllegalArgumentException("Can only update address when delivery status is PENDING");
+        }
+
+        Address address = addressRepo.findByIdAndUser_Id(addressId, userId)
+                .filter(a -> a.getStatus() == Status.PUBLISHED)
+                .orElseThrow(() -> new IllegalArgumentException("Address not found"));
+
+        document.setAddress(address);
+        return documentRepo.save(document);
+    }
+
+    /**
+     * Get all orders containing products sold by the given seller, paginated.
+     * Excludes PENDING orders (still in checkout).
+     */
+    public Page<Document> getSellerOrders(String sellerId, DeliveryStatus status, Pageable pageable) {
+        if (status != null) {
+            return documentRepo.findSellerOrdersByStatus(sellerId, status, pageable);
+        }
+        return documentRepo.findSellerOrders(sellerId, pageable);
     }
 }
